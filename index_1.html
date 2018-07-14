@@ -1,97 +1,49 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <title>Socket.io</title>
-        <script src="/socket.io/socket.io.js"></script>        
-    </head>
- 
-    <body>
-        <h1>Communication with socket.io!</h1>
-        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-        <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
-        <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> 
-        <script>
-            var socket = io.connect('http://localhost:3333');
-            socket.on('ping', function(globe){
-                var dataPoints1 = [];
-                var chart = new CanvasJS.Chart("chartContainer", {
-	            zoomEnabled: true,
-	            title: {
-		            text: "Share Value of Two Companies"
-	            },
-                axisX: {
-                    title: "chart updates every 3 secs"
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="jquery-3.3.1.js"></script>
+    <script src="/socket.io/socket.io.js"></script> 
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="script.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h1>Chart</h1>
+    <input type="number" id="inputNum" />
+    <button id="btn">SEND</button>
+    <div id="chartContainer" style="height: 370px; width:100%;"></div>
+    <script type="text/javascript">
+        window.onload = function() {
+            var dps = []; //dataPoints. 
+
+            var chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "Accepting DataPoints from User Input"
                 },
-                axisY:{
-                    prefix: "$",
-                    includeZero: false
-                }, 
-                toolTip: {
-                    shared: true
-                },
-                legend: {
-                    cursor:"pointer",
-                    verticalAlign: "top",
-                    fontSize: 22,
-                    fontColor: "dimGrey",
-                    itemclick : toggleDataSeries
-                },
-                data: [{ 
+                data: [{
                     type: "line",
-                    xValueType: "dateTime",
-                    //yValueFormatString: "$####.00",
-                    xValueFormatString: "hh:mm:ss TT",
-                    showInLegend: true,
-                    name: "Company A",
-                    dataPoints: dataPoints1
-                    },
-                ]
+                    dataPoints: dps
+                }]
             });
 
-function toggleDataSeries(e) {
-	if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-		e.dataSeries.visible = false;
-	}
-	else {
-		e.dataSeries.visible = true;
-	}
-	chart.render();
-}
+            function addDataPointsAndRender() {
+                //xValue = Number(document.getElementById("xValue").value);
+                var d=new Date();
+                xValue=d.getSeconds()
+                yValue = Number(document.getElementById("inputNum").value);
+                dps.push({
+                    x: xValue,
+                    y: yValue
+                });
+                chart.render();
+            }
 
-var updateInterval = 3000;
-// initial value
-var yValue1 = 600; 
-
-var time = new Date;
-// starting at 9.30 am
-time.setHours(22);
-time.setMinutes(36);
-time.setSeconds(00);
-time.setMilliseconds(00);
-
-function updateChart(count) {
-	count = count || 1;
-	for (var i = 0; i < count; i++) {
-		time.setTime(time.getTime()+ updateInterval);
-	// adding random value and rounding it to two digits. 
-	    yValue1 = +(globe);
-
-	// pushing the new values
-        dataPoints1.push({
-            x: time.getTime(),
-            y: yValue1
-        });
-	}
-
-	// updating legend text with  updated with y Value 
-	chart.options.data[0].legendText = " data:" + yValue1;
-	chart.render();
-}
-// generates first set of dataPoints 
-updateChart(100);	
-setInterval(function(){updateChart()}, updateInterval);
-})
-        </script>       
-    </body>
+            var renderButton = document.getElementById("btn");
+            renderButton.addEventListener("click", addDataPointsAndRender);
+        }
+    </script>
+</body>
 </html>
