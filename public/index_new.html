@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Socket.io</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>        
+    </head>
+ 
+    <body>
+        <h1>Communication with socket.io!</h1>
+        <div class ="slot" id="globe" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="final" style="height: 300px; width: 100%;"></div>
+        <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+        <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> 
+        <script>
+            $(document).ready(function()
+            {
+                var dataPoints=[]
+                $('div.slot').each(function(i,d){
+                    console.log('slot found: '+d.id);
+                    dataPoints[d.id]=[]
+                    var socket = io.connect('http://localhost:3333');
+                    socket.on('ping', function(real_data){
+                    let str=d.id;
+                    var chart = new CanvasJS.Chart(d.id, {
+                zoomEnabled: true,
+                    title: {
+                        text: "Datalogger"
+                    },
+                    axisX: {
+                        title: "chart updates every 1 sec"
+                    },
+                    axisY:{
+                        includeZero: false
+                    }, 
+                    legend: {
+                        cursor:"pointer",
+                        verticalAlign: "top",
+                        fontSize: 22,
+                        fontColor: "dimGrey",
+                        itemclick : toggleDataSeries
+                },
+                    data: [{ 
+                        type: "line",
+                        xValueType: "dateTime",
+                        xValueFormatString: "hh:mm:ss TT",
+                        showInLegend: true,
+                        name: "Sensor"+d.id,
+                        dataPoints: dataPoints[d.id]
+                        }
+                    ]
+                });
+
+            function toggleDataSeries(e) {
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+            }
+            else {
+            e.dataSeries.visible = true;
+            }
+            chart.render();
+            }
+
+            var updateInterval = 1000;
+            // initial value
+            var yValue=[] ; 
+
+            var time = new Date;
+            // starting at 9.30 am
+            time.setHours(22);
+            time.setMinutes(36);
+            time.setSeconds(00);
+            time.setMilliseconds(00);
+
+            function updateChart() {
+            let count;
+            count = count || 1;
+            for (var i = 0; i < count; i++) {
+            time.setTime(time.getTime()+ updateInterval);
+            // adding random value and rounding it to two digits.
+            if(d.id=="globe") 
+                yValue[d.id] = +(real_data.globe);
+            else if(d.id=="final")
+                yValue[d.id] = +(real_data.final);
+            //console.log(dataPoints1);
+            // pushing the new values
+            dataPoints[d.id].push({
+                x: new Date().getTime(),
+                y: yValue[d.id]
+            });
+            }
+
+            // updating legend text with  updated with y Value 
+            chart.options.data[0].legendText = " data:" + yValue[d.id];
+
+            chart.render();
+            }
+            // generates first set of dataPoints 
+            updateChart();	
+            setInterval(function(){updateChart()}, updateInterval); 
+            })
+                })
+            })
+            
+        </script>
+    </body>
+</html>
