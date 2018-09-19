@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Socket.io</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>        
+    </head>
+ 
+    <body>
+        <h1>Communication with socket.io!</h1>
+        <div class ="slot" id="sensor_1" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="sensor_2" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="sensor_3" style="height: 300px; width: 100%;"></div>
+        <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+        <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> 
+        <script src="https://www.gstatic.com/firebasejs/live/3.1/firebase.js"></script>
+        <script>
+            let sensor1;
+            let sensor2;
+            let sensor3;
+            let sensor4;
+            $(document).ready(function()
+            {
+                const config={
+                apiKey:"AIzaSyB0X-5Mmu1YiEMs9q9Uw96zZS5HUPQREsk",
+                authDomain:"fire-demo-bd419.firebaseapp.com",
+                databaseURL:"https://fire-demo-bd419.firebaseio.com",
+                storageBucket:"fire-demo-bd419.appspot.com",
+                };
+                firebase.initializeApp(config);                
+
+                var lastPlayerRef = firebase.database().ref('server/users');
+                
+                    $('div.slot').each(function(i,d){
+                        let dataPoints=[]
+                        let rpm=[]
+                        lastPlayerRef.on("value",function(data){                    
+                    let obj=data.val();
+                    let arr=Object.keys(obj);
+                    let rpm=[]
+                    let yValue=[]
+                    dataPoints[d.id]=[];
+                    for(let i=0;i<arr.length;i++)
+                    {
+                        sensor1=obj[arr[i]].sensor_1;
+                        sensor2=obj[arr[i]].sensor_2;
+                        sensor3=obj[arr[i]].sensor_3;
+                        sensor4=obj[arr[i]].sensor_4;    
+                        console.log(sensor1,sensor2,sensor3,sensor4)
+                            if(d.id=="sensor_1") 
+                                yValue[d.id] = +sensor1;
+                            else if(d.id=="sensor_2")
+                                yValue[d.id] = +sensor2;
+                            else if(d.id=="sensor_3")
+                                yValue[d.id]=+sensor3;
+                            rpm_val=+sensor4;
+                            // pushing the new values
+                            dataPoints[d.id].push({
+                                x: new Date().getTime(),
+                                y: yValue[d.id]
+                            });
+                            rpm.push({
+                                x: new Date().getTime(),
+                                y: rpm_val
+                        });            
+                    }
+                    //console.log(dataPoints,rpm);
+                    var chart = new CanvasJS.Chart(d.id, {
+                    animationEnabled: true,
+                    theme: "light2",
+                    title:{
+                        text: "Simple Line Chart"
+                    },
+                    axisY:{
+                        includeZero: false
+                    },
+                    toolTip: {
+                        shared: true
+                    },
+                    legend: {
+                        cursor:"pointer",
+                        verticalAlign: "top",
+                        fontSize: 22,
+                        fontColor: "dimGrey",
+                        itemclick : toggleDataSeries
+                },
+                    data: [{ 
+                        type: "line",
+                        xValueType: "dateTime",
+                        showInLegend: true,
+                        name: d.id,
+                        dataPoints: dataPoints[d.id]
+                        },
+                        { 
+                        type: "line",
+                        xValueType: "dateTime",
+                        showInLegend: true,
+                        name: "wheel speed",
+                        dataPoints: rpm
+                        }
+                    ]
+                });
+                chart.render();
+                function toggleDataSeries(e) {
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+            }
+            else {
+            e.dataSeries.visible = true;
+            }
+            chart.render();
+            }
+                
+            })                   
+          
+        });           
+    })
+        
+            
+        </script>
+    </body>
+</html>

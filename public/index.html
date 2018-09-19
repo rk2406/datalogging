@@ -9,14 +9,17 @@
  
     <body>
         <h1>Communication with socket.io!</h1>
-        <div class ="slot" id="globe" style="height: 300px; width: 100%;"></div>
-        <div class ="slot" id="final" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="sensor_1" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="sensor_2" style="height: 300px; width: 100%;"></div>
+        <div class ="slot" id="sensor_3" style="height: 300px; width: 100%;"></div>
         <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
         <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> 
         <script src="https://www.gstatic.com/firebasejs/live/3.1/firebase.js"></script>
         <script>
             let sensor1;
-                let sensor2;
+            let sensor2;
+            let sensor3;
+            let sensor4;
             $(document).ready(function()
             {
                 const config={
@@ -36,13 +39,16 @@
                 let arr=Object.keys(obj);
                 for(let i=0;i<arr.length;i++)
                 {
-                    sensor1=obj[arr[i]].final;
-                    sensor2=obj[arr[i]].globe;
+                    sensor1=obj[arr[i]].sensor_1;
+                    sensor2=obj[arr[i]].sensor_2;
+                    sensor3=obj[arr[i]].sensor_3;
+                    sensor4=obj[arr[i]].sensor_4;
                     console.log(sensor1,sensor2);
                 }
                 
                 })
                 var dataPoints=[]
+                var rpm=[]
                 $('div.slot').each(function(i,d){
                     dataPoints[d.id]=[];
                     let str=d.id;
@@ -71,6 +77,14 @@
                         showInLegend: true,
                         name: "Sensor"+d.id,
                         dataPoints: dataPoints[d.id]
+                        },
+                        { 
+                        type: "line",
+                        xValueType: "dateTime",
+                        xValueFormatString: "hh:mm:ss TT",
+                        showInLegend: true,
+                        name: "wheel speed",
+                        dataPoints: rpm
                         }
                     ]
                 });
@@ -88,7 +102,7 @@
             var updateInterval = 1000;
             // initial value
             var yValue=[] ; 
-
+            var rpm_val;
             var time = new Date;
             // starting at 9.30 am
             time.setHours(22);
@@ -102,20 +116,27 @@
             for (var i = 0; i < count; i++) {
             time.setTime(time.getTime()+ updateInterval);
             // adding random value and rounding it to two digits.
-            if(d.id=="globe") 
+            if(d.id=="sensor_1") 
                 yValue[d.id] = sensor1;
-            else if(d.id=="final")
+            else if(d.id=="sensor_2")
                 yValue[d.id] = sensor2;
+            else if(d.id=="sensor_3")
+                yValue[d.id]=sensor3;
+            rpm_val=sensor4;
             // pushing the new values
             dataPoints[d.id].push({
                 x: new Date().getTime(),
                 y: yValue[d.id]
             });
+            rpm.push({
+                x: new Date().getTime(),
+                y: rpm_val
+            });
             }
 
             // updating legend text with  updated with y Value 
             chart.options.data[0].legendText = " data:" + yValue[d.id];
-
+            chart.options.data[1].legendText = " rpm:" + rpm_val; 
             chart.render();
             }
             // generates first set of dataPoints 
